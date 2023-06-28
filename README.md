@@ -59,7 +59,7 @@ When executed successfully, your Jamf Pro Notifications are posted to your speci
 
 ![Jamf Pro Notifications in Slack](images/jamf-pro-notifications-in-slack.png)
 
-# Ignoring Notifications
+## Ignoring Notifications
 
 For any notifications you wish to ignore, you can comment them out in [notifications.txt](notifications.txt) by preceding that line with a `#`.
 
