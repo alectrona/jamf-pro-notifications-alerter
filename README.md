@@ -55,7 +55,7 @@ Note: Using any of the above command line options will override that option's as
 environmental variable.
 ```
 
-# See Notifications in Slack
+## See Notifications in Slack
 
 When executed successfully, your Jamf Pro Notifications are posted to your specified Slack webhook including a link to the Jamf Pro server, the notification name, and optional token name and days until expiration. 🎉
 
