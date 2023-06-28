@@ -21,34 +21,34 @@ unset apiToken jamfProNotifications notificationType notificationParamName notif
 
 # Expire the Bearer Token
 function finish() {
-    [[ -n "$apiToken" ]] && curl -s -H "Authorization: Bearer $apiToken" "$jamfProURL/uapi/auth/invalidateToken" -X POST
+	[[ -n "$apiToken" ]] && curl -s -H "Authorization: Bearer $apiToken" "$jamfProURL/uapi/auth/invalidateToken" -X POST
 }
 trap "finish" EXIT
 
 # Function to get a Jamf Pro API Bearer Token
 function get_jamf_pro_api_token() {
-    local healthCheckHttpCode validityHttpCode
+	local healthCheckHttpCode validityHttpCode
 
-    # Make sure we can contact the Jamf Pro server
-    healthCheckHttpCode=$(curl -s "${jamfProURL}/healthCheck.html" -X GET -o /dev/null -w "%{http_code}")
-    [[ "$healthCheckHttpCode" != "200" ]] && echo "Unable to contact the Jamf Pro server; exiting" && exit 4
+	# Make sure we can contact the Jamf Pro server
+	healthCheckHttpCode=$(curl -s "${jamfProURL}/healthCheck.html" -X GET -o /dev/null -w "%{http_code}")
+	[[ "$healthCheckHttpCode" != "200" ]] && echo "Unable to contact the Jamf Pro server; exiting" && exit 4
 
-    # Attempt to obtain the token
-    apiToken=$(curl -s -u "$apiUser:$apiPass" "${jamfProURL}/api/v1/auth/token" -X POST 2>/dev/null | jq -r '.token | select(.!=null)')
-    [[ -z "$apiToken" ]] && echo "Unable to obtain a Jamf Pro API Bearer Token; exiting" && exit 5
+	# Attempt to obtain the token
+	apiToken=$(curl -s -u "$apiUser:$apiPass" "${jamfProURL}/api/v1/auth/token" -X POST 2>/dev/null | jq -r '.token | select(.!=null)')
+	[[ -z "$apiToken" ]] && echo "Unable to obtain a Jamf Pro API Bearer Token; exiting" && exit 5
 
-    # Validate the token
-    validityHttpCode=$(curl -s -H "Authorization: Bearer $apiToken" "${jamfProURL}/api/v1/auth" -X GET -o /dev/null -w "%{http_code}")
-    [[ "$validityHttpCode" != "200" ]] && exit 6
+	# Validate the token
+	validityHttpCode=$(curl -s -H "Authorization: Bearer $apiToken" "${jamfProURL}/api/v1/auth" -X GET -o /dev/null -w "%{http_code}")
+	[[ "$validityHttpCode" != "200" ]] && exit 6
 
-    return
+	return
 }
 
 show_help() {
-    local exitCode="$1"
+	local exitCode="$1"
 
-    echo
-    /bin/cat << HELP
+	echo
+	/bin/cat << HELP
 OVERVIEW: A tool that retrieves Jamf Pro Notifications and posts them to Slack.
 
 USAGE:
@@ -56,10 +56,10 @@ USAGE:
 
 OPTIONS: 
 
---url               The Jamf Pro URL.
---username          The Jamf Pro API username.
---password          The Jamf Pro API password.
---slack-webhook     A Slack webhook to post the Jamf Pro Notifications to.
+--url				The Jamf Pro URL.
+--username			The Jamf Pro API username.
+--password			The Jamf Pro API password.
+--slack-webhook		A Slack webhook to post the Jamf Pro Notifications to.
 
 ENVIRONMENTAL VARIABLES:
 
@@ -74,52 +74,52 @@ Note: Using any of the above command line options will override that option's as
 environmental variable.
 
 HELP
-    exit "$exitCode"
+	exit "$exitCode"
 }
 
 # Determine if we have jq installed, and exit if not
 if ! command -v jq > /dev/null ; then
-    echo "Error: jq is not installed, can't continue."
+	echo "Error: jq is not installed, can't continue."
 
-    if [[ "$unameType" == "Darwin" ]]; then
-        echo "Suggestion: Install jq with Homebrew: \"brew install jq\""
-    else
-        echo "Suggestion: Install jq with your distro's package manager."
-    fi
+	if [[ "$unameType" == "Darwin" ]]; then
+		echo "Suggestion: Install jq with Homebrew: \"brew install jq\""
+	else
+		echo "Suggestion: Install jq with your distro's package manager."
+	fi
 
-    exit 1
+	exit 1
 fi
 
 # Parse our command line arguments
 while test $# -gt 0
 do
-    case "$1" in
-        --url)
-            shift
-            jamfProURL="${1%/}"
-            ;;
-        --username)
-            shift
-            apiUser="$1"
-            ;;
-        --password)
-            shift
-            apiPass="$1"
-            ;;
-        --slack-webhook)
-            shift
-            slackWebhook="$1"
-            ;;
-        --help)
-            show_help 0
-            ;;
-        *)
-            # Exit if we received an unknown option/flag/argument
-            [[ "$1" == --* ]] && echo "Error: Unknown option/flag: $1" && show_help 2
-            [[ "$1" != --* ]] && echo "Error: Unknown argument: $1" && show_help 2
-            ;;
-    esac
-    shift
+	case "$1" in
+		--url)
+			shift
+			jamfProURL="${1%/}"
+			;;
+		--username)
+			shift
+			apiUser="$1"
+			;;
+		--password)
+			shift
+			apiPass="$1"
+			;;
+		--slack-webhook)
+			shift
+			slackWebhook="$1"
+			;;
+		--help)
+			show_help 0
+			;;
+		*)
+			# Exit if we received an unknown option/flag/argument
+			[[ "$1" == --* ]] && echo "Error: Unknown option/flag: $1" && show_help 2
+			[[ "$1" != --* ]] && echo "Error: Unknown argument: $1" && show_help 2
+			;;
+	esac
+	shift
 done
 
 # Exit if our arguments are not set
@@ -141,23 +141,23 @@ notificationCount=$(echo "$jamfProNotifications" | jq length)
 # Iterate through notification details
 while [[ "$index" -lt "$notificationCount" ]]; do
 
-    # Get type of notification
-    notificationType=$(echo "$jamfProNotifications" | jq -r ".[$index].type")
+	# Get type of notification
+	notificationType=$(echo "$jamfProNotifications" | jq -r ".[$index].type")
 
-    # Verify notification is on approved alert list
+	# Verify notification is on approved alert list
 	if grep -v '^#' "$selectedNotificationsFile" | grep -qw "$notificationType"; then
 
-        # Get additional details on each notification (if available) and build out message
-        notificationParamName=$(echo "$jamfProNotifications" | jq -r ".[$index].params.name | select(.!=null)")
-        notificationParamDays=$(echo "$jamfProNotifications" | jq -r ".[$index].params.days | select(.!=null)")
+		# Get additional details on each notification (if available) and build out message
+		notificationParamName=$(echo "$jamfProNotifications" | jq -r ".[$index].params.name | select(.!=null)")
+		notificationParamDays=$(echo "$jamfProNotifications" | jq -r ".[$index].params.days | select(.!=null)")
 		notificationString="<${jamfProURL}|${jamfProDomain}>: $notificationType"
 
-        [[ -n "$notificationParamName" ]] && notificationString+=" for \`$notificationParamName\`"
-        [[ -n "$notificationParamDays" ]] && notificationString+=" in $notificationParamDays days"
+		[[ -n "$notificationParamName" ]] && notificationString+=" for \`$notificationParamName\`"
+		[[ -n "$notificationParamDays" ]] && notificationString+=" in $notificationParamDays days"
 
 		notificationStrings+=("$notificationString")
-    fi
-    ((index++))
+	fi
+	((index++))
 done
 
 # If there are any notifications, print to console and post them to Slack
