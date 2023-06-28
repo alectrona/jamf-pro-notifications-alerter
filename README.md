@@ -13,7 +13,9 @@ Jamf Pro Notifications include (but are not limited to):
 
 The below image is an example of the dialog that displays the Jamf Pro Notification details.
 
-<center><img alt="Jamf Pro Notifications Dialog" src="images/jamf-pro-notifications-dialog.png" width="400"></center>
+<p align="center">
+<img alt="Jamf Pro Notifications Dialog" src="images/jamf-pro-notifications-dialog.png" width="400">
+</p>
 
 A static list of all of the Jamf Pro Notifications obtainable by API is included in [notifications.txt](notifications.txt).
 
@@ -62,6 +64,10 @@ When executed successfully, your Jamf Pro Notifications are posted to your speci
 ## Ignoring Notifications
 
 For any notifications you wish to ignore, you can comment them out in [notifications.txt](notifications.txt) by preceding that line with a `#`.
+
+## Deploying in Your CI/CD Platform
+
+This repo contains sample pipeline config files for [Bitbucket](/bitbucket-pipelines.yml), [CircleCI](.circleci/config.yml), and [GitHub](.github/workflows/jamf-pro-notifications-alerter.yml). Additionally, you can view the [Wiki](https://github.com/alectrona/jamf-pro-notifications-alerter/wiki) for detailed instructions for deploying Jamf Pro Notifications Alerter in your CI/CD platform.
 
 ## Other Resources
 
