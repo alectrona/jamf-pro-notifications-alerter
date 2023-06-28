@@ -1,0 +1,15 @@
+image: atlassian/default-image:3
+
+pipelines:
+  default:
+    - parallel:
+      - step:
+          name: 'Get notifications from Jamf Pro Server 1'
+          script:
+            - bash scripts/jamf-pro-notifications-alerter.sh --url "https://server1.jamfcloud.com" --password "$JSS1_API_PASS"
+      
+      # Get notifications from a second Jamf Pro server (optional)
+      - step:
+          name: 'Get notifications from Jamf Pro Server 2'
+          script:
+            - bash scripts/jamf-pro-notifications-alerter.sh --url "https://server2.jamfcloud.com" --password "$JSS2_API_PASS"
