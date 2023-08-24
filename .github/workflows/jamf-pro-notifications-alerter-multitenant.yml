@@ -1,0 +1,66 @@
+name: Jamf Pro Notifications Alerter
+
+on:
+  workflow_dispatch:
+
+jobs:
+  get-notifications-jamf-pro-1:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # STEP 1-a: Checkout code from repository
+      - name: Checkout code from repository
+        uses: actions/checkout@v3
+
+      # STEP 1-b: Checkout code from Jamf-Management repository to access centralized org URL list
+      - name: Checkout code from Jamf-Management repository
+        uses: actions/checkout@v3
+        with:
+          repository: advisoryteam/Jamf-Management
+          ref: main
+          path: ./Jamf-Management
+          token: ${{ secrets.ACCESS_TOKEN_MAIN }}
+
+      # STEP 2: Get notifications from servers
+      - name: Get notifications from Jamf Pro Servers
+        run: |       
+          ### Define functions
+          ### ------------------------------------------------------
+
+          # Function to parse a JSON body
+          function getJSONValue() {
+            JSON="$1" osascript -l 'JavaScript' \
+            -e 'const env = $.NSProcessInfo.processInfo.environment.objectForKey("JSON").js' \
+            -e "JSON.parse(env).$2"
+          }
+
+          ### Define variables
+          ### ------------------------------------------------------
+
+          # Path to organization URLs directory where JSON configuration file is copied
+          ### Comment this out for testing
+          # managedOrganizationsDir="./Jamf-Management/Managed Organizations"
+          ### Uncomment this for testing
+          managedOrganizationsDir="./Jamf-Management/Managed Organizations/Test"
+
+          # Get contents of JSON configuration file
+          for dir in "$managedOrganizationsDir"; do
+            managedOrganizationsJSON="$( cat "$dir"/*.json )"
+          done
+
+          # Get the size of the JSON array to create a for loop to iterate through the JSON array
+          size=$(getJSONValue "${managedOrganizationsJSON}" "organizations.length")
+
+          ### Begin script
+          ### ------------------------------------------------------
+
+          orgName="$( getJSONValue "${managedOrganizationsJSON}" "organizations[$i].organizationName" )"
+          url="$( getJSONValue "${managedOrganizationsJSON}" "organizations[$i].url" )"
+
+          # Iterate through managed Jamf instances and run notifier script
+          for (( i=0; i<$size; i++)); do
+            #bash scripts/jamf-pro-notifications-alerter.sh --url "${url}" --username ${{ secrets.API_USER }} --password ${{ secrets.API_PASS }} --slack-webhook ${{ secrets.SLACK_WEBHOOK }}
+          done
+
+          ### End script
+          ### ------------------------------------------------------
