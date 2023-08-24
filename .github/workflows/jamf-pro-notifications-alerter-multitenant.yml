@@ -1,0 +1,14 @@
+name: Jamf Pro Notifications Alerter
+
+on:
+  workflow_dispatch:
+
+jobs:
+  get-notifications-jamf-pro-1:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get notifications from Jamf Pro Server 1
+        run: bash scripts/jamf-pro-notifications-alerter.sh --url ${{ secrets.JAMF_PRO_URL_1 }} --username ${{ secrets.API_USER }} --password ${{ secrets.API_PASS }} --slack-webhook ${{ secrets.SLACK_WEBHOOK }}
